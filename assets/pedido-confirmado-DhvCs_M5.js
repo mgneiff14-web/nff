@@ -31,7 +31,7 @@ function A(){
   let orderId=urlOrderId||(O.paidInvoiceId?`TK${String(O.paidInvoiceId).replace(/[^0-9A-Za-z]/g,``)}`:null);
   let meusPedidosHref=orderId?`/meus-pedidos?pedido=${encodeURIComponent(orderId)}`:`/meus-pedidos`;
   let currentSearch=typeof window<`u`?window.location.search:``;
-  let continuarHref=`/upsellkitferramentas${currentSearch}`;
+  let continuarHref=`/${currentSearch}`;
 
   return (0,D.jsx)(d,{children:(0,D.jsxs)(`div`,{className:`min-h-screen bg-[#f5f5f5] pb-24`,children:[
     (0,D.jsxs)(`div`,{className:`bg-white px-4 pb-6 pt-10 text-center`,children:[
