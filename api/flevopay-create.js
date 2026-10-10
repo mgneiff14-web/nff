@@ -1,27 +1,7 @@
 const FLEVOPAY_API = 'https://app.flevopay.com.br/api/v1/transaction';
-const UTMIFY_API = 'https://api.utmify.com.br/api-credentials/orders';
 
 function onlyDigits(value) {
   return String(value || '').replace(/\D/g, '');
-}
-
-function utcTimestamp(date) {
-  return (date || new Date()).toISOString().slice(0, 19).replace('T', ' ');
-}
-
-async function pushUtmify(payload) {
-  const token = process.env.UTMIFY_API_TOKEN;
-  if (!token) return;
-  try {
-    const r = await fetch(UTMIFY_API, {
-      method: 'POST',
-      headers: { 'x-api-token': token, 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!r.ok) console.error('Utmify create push failed', r.status, await r.text().catch(() => ''));
-  } catch (err) {
-    console.error('Utmify create push error', err);
-  }
 }
 
 module.exports = async (req, res) => {
@@ -102,47 +82,6 @@ module.exports = async (req, res) => {
     res.status(502).json({ message: 'Falha ao conectar com o FlevoPay.' });
     return;
   }
-
-  // Registra o pedido como "aguardando pagamento" na Utmify antes de responder,
-  // pra garantir que a chamada saia mesmo em ambiente serverless (nada roda depois do res.json).
-  await pushUtmify({
-    orderId: String(data.transaction_id),
-    platform: 'FlevoPay',
-    paymentMethod: 'pix',
-    status: 'waiting_payment',
-    createdAt: utcTimestamp(),
-    approvedDate: null,
-    refundedAt: null,
-    customer: {
-      name: payer.name || 'Cliente',
-      email: payer.email,
-      phone: onlyDigits(payer.phone) || null,
-      document: onlyDigits(payer.cpf) || null,
-      country: 'BR',
-    },
-    products: [{
-      id: item.name ? String(item.name).slice(0, 60) : 'produto',
-      name: item.name || 'Produto',
-      planId: null,
-      planName: null,
-      quantity: item.quantity || 1,
-      priceInCents: amountCents,
-    }],
-    trackingParameters: {
-      src: utm.src || null,
-      sck: utm.sck || null,
-      utm_source: utm.utm_source || null,
-      utm_campaign: utm.utm_campaign || null,
-      utm_medium: utm.utm_medium || null,
-      utm_content: utm.utm_content || null,
-      utm_term: utm.utm_term || null,
-    },
-    commission: {
-      totalPriceInCents: amountCents,
-      gatewayFeeInCents: 0,
-      userCommissionInCents: amountCents,
-    },
-  });
 
   res.status(200).json({
     invoiceId: data.transaction_id,

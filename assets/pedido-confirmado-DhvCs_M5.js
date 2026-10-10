@@ -22,7 +22,7 @@ function A(){
   let O=f();
   let productTitle=O.productTitle||FALLBACK_TITLE;
   let qty=O.qty||1;
-  let price=O.productPrice??97.9;
+  let price=O.productPrice??67.9;
   let total=price*qty;
   let[extraItems,setExtraItems]=E.useState([]);
   E.useEffect(()=>{try{let raw=window.localStorage.getItem(`tiktokshop:vitrine-cart-paid`);if(raw){let items=JSON.parse(raw);if(Array.isArray(items)&&items.length>0)setExtraItems(items)}}catch{}},[]);

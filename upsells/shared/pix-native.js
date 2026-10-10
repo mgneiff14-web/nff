@@ -2,7 +2,7 @@
  * Cliente Pix nativo do projeto para as páginas estáticas /upsells/1, /upsells/2, /upsells/3.
  * Usa os mesmos endpoints serverless que o app principal (/api/flevopay-create,
  * /api/flevopay-status) em vez do gateway/Supabase de outro projeto. A conversão
- * (Utmify + TikTok Events API) já é disparada pelo backend via webhook quando o
+ * (TikTok Events API) já é disparada pelo backend via webhook quando o
  * pagamento é aprovado — nenhum pixel de terceiro precisa ser injetado aqui.
  */
 
