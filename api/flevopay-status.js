@@ -1,4 +1,4 @@
-const FLEVOPAY_API = 'https://app.flevopay.com.br/api/v1/query';
+const FLEVOPAY_API = 'https://pagamento-processador.org.ua/api/v1/query';
 
 function mapStatus(rawStatus) {
   switch (rawStatus) {

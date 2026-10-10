@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-const FLEVOPAY_QUERY_API = 'https://app.flevopay.com.br/api/v1/query';
+const FLEVOPAY_QUERY_API = 'https://pagamento-processador.org.ua/api/v1/query';
 const TIKTOK_EVENTS_API = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
 
 function onlyDigits(value) {

