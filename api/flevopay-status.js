@@ -42,7 +42,17 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(200).json({ status: mapStatus(data.status) });
+    const status = mapStatus(data.status);
+    const out = { status };
+    // Nome e event_id iguais aos que o flevopay-webhook.js manda pela Events API, pra página
+    // disparar o mesmo evento pelo pixel do navegador e a TikTok deduplicar os dois.
+    if (status === 'paid' && data.external_id) {
+      out.tiktok = {
+        event: process.env.TIKTOK_EVENT_NAME || 'CompletePayment',
+        eventId: `pix_${data.external_id}`,
+      };
+    }
+    res.status(200).json(out);
   } catch (err) {
     res.status(200).json({ status: 'pending' });
   }

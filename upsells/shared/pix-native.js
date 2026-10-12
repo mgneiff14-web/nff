@@ -2,8 +2,8 @@
  * Cliente Pix nativo do projeto para as páginas estáticas /upsells/1, /upsells/2, /upsells/3.
  * Usa os mesmos endpoints serverless que o app principal (/api/flevopay-create,
  * /api/flevopay-status) em vez do gateway/Supabase de outro projeto. A conversão
- * (TikTok Events API) já é disparada pelo backend via webhook quando o
- * pagamento é aprovado — nenhum pixel de terceiro precisa ser injetado aqui.
+ * é disparada duas vezes com o mesmo event_id: pelo backend (TikTok Events API, via
+ * webhook) e pelo pixel do navegador (trackTikTokPurchase), e a TikTok deduplica.
  */
 
 export function getCustomerData() {
@@ -116,6 +116,29 @@ export async function criarPix(dados) {
   } catch (err) {
     return { success: false, error: (err && err.message) || "Erro ao gerar PIX" };
   }
+}
+
+// Dispara a compra pelo pixel do navegador, que leva junto o clique do anúncio (ttclid/_ttp).
+// "tiktok" vem do /api/flevopay-status com o mesmo nome de evento e event_id que o webhook
+// manda pela Events API, então a TikTok conta os dois como uma venda só.
+export function trackTikTokPurchase(tiktok, valor) {
+  try {
+    if (!tiktok || !tiktok.eventId || !window.ttq) return;
+    var customer = getCustomerData();
+    var identify = {};
+    var email = String(customer.email || "").trim().toLowerCase();
+    if (email) identify.email = email;
+    var phone = String(customer.telefone || "").replace(/\D/g, "");
+    if (phone) identify.phone_number = phone.indexOf("55") === 0 ? "+" + phone : "+55" + phone;
+    var cpf = String(customer.cpf || "").replace(/\D/g, "");
+    if (cpf) identify.external_id = cpf;
+    if (Object.keys(identify).length) window.ttq.identify(identify);
+    window.ttq.track(
+      tiktok.event || "CompletePayment",
+      { content_type: "product", currency: "BRL", value: valor },
+      { event_id: tiktok.eventId }
+    );
+  } catch (e) {}
 }
 
 export async function verificarStatusPix(invoiceId) {

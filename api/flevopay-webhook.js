@@ -11,14 +11,14 @@ function sha256(value) {
   return crypto.createHash('sha256').update(String(value).trim().toLowerCase()).digest('hex');
 }
 
-async function sendTikTokEvent({ pixelId, accessToken, transactionId, amountReais, user }) {
+async function sendTikTokEvent({ pixelId, accessToken, eventId, amountReais, user }) {
   const eventBody = {
     event_source: 'web',
     event_source_id: pixelId,
     data: [{
       event: process.env.TIKTOK_EVENT_NAME || 'CompletePayment',
       event_time: Math.floor(Date.now() / 1000),
-      event_id: `pix_${transactionId}`,
+      event_id: eventId,
       user,
       properties: {
         content_type: 'product',
@@ -35,13 +35,18 @@ async function sendTikTokEvent({ pixelId, accessToken, transactionId, amountReai
       headers: { 'Access-Token': accessToken, 'Content-Type': 'application/json' },
       body: JSON.stringify(eventBody),
     });
-    if (!r.ok) console.error('TikTok event failed', pixelId, r.status, await r.text().catch(() => ''));
+    // A TikTok responde HTTP 200 mesmo quando recusa o evento; o erro vem em "code" no corpo.
+    const text = await r.text().catch(() => '');
+    let code = null;
+    try { code = JSON.parse(text).code; } catch (e) {}
+    if (!r.ok || code !== 0) console.error('TikTok event failed', pixelId, eventId, amountReais, r.status, text);
+    else console.log('TikTok event sent', pixelId, eventId, amountReais);
   } catch (err) {
     console.error('TikTok event error', pixelId, err);
   }
 }
 
-async function pushTikTokPurchase({ transactionId, amountReais, customer }) {
+async function pushTikTokPurchase({ eventId, amountReais, customer }) {
   const pixelId = process.env.TIKTOK_PIXEL_ID;
   const accessToken = process.env.TIKTOK_ACCESS_TOKEN;
   if (!pixelId || !accessToken) return;
@@ -59,7 +64,7 @@ async function pushTikTokPurchase({ transactionId, amountReais, customer }) {
   const docDigits = onlyDigits(customer.document);
   if (docDigits) user.external_id = sha256(docDigits);
 
-  await sendTikTokEvent({ pixelId, accessToken, transactionId, amountReais, user });
+  await sendTikTokEvent({ pixelId, accessToken, eventId, amountReais, user });
 }
 
 module.exports = async (req, res) => {
@@ -96,10 +101,13 @@ module.exports = async (req, res) => {
   const sentAtCreation = (verified && verified.customer_data) || {};
   const customer = sentAtCreation.customer || incoming.customer || {};
   const amountCents = (verified && verified.amount) ?? incoming.amount ?? 0;
+  // O event_id usa a nossa reference (e não o transaction_id) porque é o único identificador
+  // que o navegador também conhece: o flevopay-status.js devolve o mesmo valor pra página.
+  const reference = (verified && verified.external_id) || incoming.external_id || incoming.store_reference;
 
   if (status === 'approved') {
     await pushTikTokPurchase({
-      transactionId,
+      eventId: `pix_${reference || transactionId}`,
       amountReais: amountCents / 100,
       customer,
     });

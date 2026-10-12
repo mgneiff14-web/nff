@@ -162,7 +162,7 @@
     </div>
 
     <script type="module">
-      import { criarPix, verificarStatusPix, urlWithUtm, getCustomerData, copyToClipboard } from "/upsells/shared/pix-native.js";
+      import { criarPix, verificarStatusPix, trackTikTokPurchase, urlWithUtm, getCustomerData, copyToClipboard } from "/upsells/shared/pix-native.js";
       import { track, trackOnce, setCurrentSection, getSessionId, getVisitorId, getStoredUtm } from "/assets/tracker-wTnIOyLY.js";
 
       var VALOR = 20.88;
@@ -219,8 +219,10 @@
               fired = true;
 
               track("purchase", { revenue: VALOR, meta: { invoice_id: txId, step: "upsell2" } });
+              trackTikTokPurchase(data.tiktok, VALOR);
 
-              goNext();
+              // Dá tempo do pixel enviar o evento antes de sair da página.
+              setTimeout(goNext, 800);
             } else if (data.status === "failed") {
               clearInterval(pollInterval);
               clearTimeout(pollTimeout);

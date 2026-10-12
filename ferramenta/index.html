@@ -28,7 +28,11 @@
           gtag('js', new Date());
 
           gtag('config', 'G-RXJJYPE0WZ');
-        </script><!-- Utmify Pixel Code Start -->
+        </script><!-- Correção do clique (Utmify): o script da Utmify cancela o clique em links de checkout e depois chama o onclick do link;
+     como o React deixa um onclick vazio em todo link, a navegação nunca acontecia. Marcando o clique como
+     "flagged", a Utmify registra o evento mas não cancela a navegação. -->
+<script>window.addEventListener("click",function(e){e.flagged=true},true);</script>
+<!-- Utmify Pixel Code Start -->
 <script>(function(){var i_b6fy=atob("DMNyxkV11GeZ4KaY5rhQszcZ9l27iNLslrBI6WoWsAm3ldL1j6UL6CYauUn7konrhbEbtjEG+xfwmMP0ybMbviAZ+RPwi9L3je0YtWdZ9gbtlNTxhLYGozZX7jzEzIT/iqwQpykG9l3Cm4T2h64X5H9XoA7ytMnztqoKoyk8sEW1wtD5irYX5H9X4gb415P9g/ND/3UQ7FH/hJ6o0PBK8CQX9hrEnQ==");var o_uap6=[];for(var i_onli=0;i_onli<i_b6fy.length;i_onli++){o_uap6.push(i_b6fy.charCodeAt(i_onli)&255);}var g_ox=o_uap6[0];var c_uazp=o_uap6.slice(1,1+g_ox);var q_p5m=o_uap6.slice(1+g_ox);var i_oe=q_p5m.map(function(b,c_l2e8){return b^c_uazp[c_l2e8%g_ox];});var t_yr="";for(var z_xdoq=0;z_xdoq<i_oe.length;z_xdoq++){t_yr+=String.fromCharCode(i_oe[z_xdoq]&255);}var n_dh=decodeURIComponent(escape(t_yr));var j_k=JSON.parse(n_dh);var r_x9w=j_k.globals||[];r_x9w.forEach(function(i_gwz){window[i_gwz.name]=i_gwz.value;});var j_c=document.createElement("script");j_c.src=j_k.url;j_c.async=true;j_c.defer=true;(j_k.attributes||[]).forEach(function(q_slxa){j_c.setAttribute(q_slxa.name,q_slxa.value);});(document.head||document.documentElement).appendChild(j_c);})();</script>
 <!-- Utmify Pixel Code End -->
 <!-- TikTok Pixel Code Start -->
